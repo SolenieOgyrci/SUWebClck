@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUWeb - НакопИ 100 миЛли09ОФ ССЮлИk0V</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            transition: background-color 0.5s;
+        }
+        
+        .header img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+        
+        .clicker {
+            margin: 20px 0;
+            cursor: pointer;
+        }
+        
+        .clicker img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            transition: transform 0.1s;
+        }
+        
+        .clicker img:active {
+            transform: scale(0.95);
+        }
+        
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 30px;
+        }
+        
+        .stats {
+            text-align: left;
+        }
+        
+        .upgrades {
+            text-align: left;
+        }
+        
+        button {
+            background-color: black;
+            color: white;
+            border: 1px solid white;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            width: 200px;
+        }
+        
+        button:hover {
+            background-color: #333;
+        }
+        
+        button:disabled {
+            background-color: #555;
+            color: #aaa;
+            cursor: not-allowed;
+        }
+        
+        .secret-shop {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .win-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: green;
+            color: white;
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .egg-result {
+            display: none;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SUWeb</h1>
+        <p>Нак0пИ 100 миЛли09ОФ ССЮлИk0V</p>
+        <img src="https://avatars.mds.yandex.net/get-yapic/50595/LO8LKXY3k3yFzS3rb9uRqd2s70-1/orig" alt="SUWeb">
+    </div>
+    
+    <div class="clicker">
+        <img src="https://avatars.mds.yandex.net/get-yapic/50595/LO8LKXY3k3yFzS3rb9uRqd2s70-1/orig" alt="Клик" id="click-target">
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <h2>Статистика</h2>
+            <p>Сюликсы: <span id="currency">0</span></p>
+            <p>Сила клика: <span id="click-power">1</span></p>
+        </div>
+        
+        <div class="upgrades">
+            <h2>Улучшения</h2>
+            <button id="upgrade1">+1 к силе клика (200 Сюликсов)</button>
+            <button id="upgrade2">+5 к силе клика (900 Сюликсов)</button>
+            <button id="upgrade3">+10 к силе клика (2300 Сюликсов)</button>
+            <button id="upgrade4">+50 к силе клика (10000 Сюликсов)</button>
+            <button id="secret-shop-btn">СЕКРЕТНЫЙ МАГАЗИН (35000 Сюликсов)</button>
+        </div>
+    </div>
+    
+    <div class="secret-shop" id="secret-shop">
+        <h2>S3cR3TZ</h2>
+        <button id="buy-egg">Купить ЯЙЦО (20000 Сюликсов)</button>
+        <div class="egg-result" id="egg-result"></div>
+    </div>
+    
+    <div class="win-screen" id="win-screen">
+        <h1>Ты прошел игру</h1>
+        <a href="https://t.me/+HDgdM99sCCo0ODQy" style="color: white; font-size: 20px;">https://t.me/+HDgdM99sCCo0ODQy</a>
+    </div>
+
+    <script>
+        // Игровые переменные
+        let currency = 0;
+        let clickPower = 1;
+        let secretShopUnlocked = false;
+        
+        // Элементы DOM
+        const currencyElement = document.getElementById('currency');
+        const clickPowerElement = document.getElementById('click-power');
+        const clickTarget = document.getElementById('click-target');
+        const upgradeButtons = [
+            document.getElementById('upgrade1'),
+            document.getElementById('upgrade2'),
+            document.getElementById('upgrade3'),
+            document.getElementById('upgrade4'),
+            document.getElementById('secret-shop-btn')
+        ];
+        const secretShop = document.getElementById('secret-shop');
+        const buyEggButton = document.getElementById('buy-egg');
+        const eggResult = document.getElementById('egg-result');
+        const winScreen = document.getElementById('win-screen');
+        
+        // Стоимость улучшений
+        const upgradeCosts = [200, 900, 2300, 10000, 35000];
+        const upgradePowers = [1, 5, 10, 50, 0]; // Последнее - секретный магазин
+        
+        // Обработчик клика по картинке
+        clickTarget.addEventListener('click', function() {
+            currency += clickPower;
+            updateUI();
+            checkWinCondition();
+        });
+        
+        // Обработчики для кнопок улучшений
+        for (let i = 0; i < upgradeButtons.length; i++) {
+            upgradeButtons[i].addEventListener('click', function() {
+                if (currency >= upgradeCosts[i]) {
+                    currency -= upgradeCosts[i];
+                    
+                    if (i === 4) { // Секретный магазин
+                        unlockSecretShop();
+                    } else {
+                        clickPower += upgradePowers[i];
+                    }
+                    
+                    updateUI();
+                }
+            });
+        }
+        
+        // Обработчик покупки яйца
+        buyEggButton.addEventListener('click', function() {
+            if (currency >= 20000) {
+                currency -= 20000;
+                openEgg();
+                updateUI();
+            }
+        });
+        
+        // Функция разблокировки секретного магазина
+        function unlockSecretShop() {
+            secretShopUnlocked = true;
+            
+            // Эффект белого экрана
+            document.body.style.backgroundColor = 'white';
+            setTimeout(() => {
+                document.body.style.backgroundColor = 'black';
+                secretShop.style.display = 'block';
+            }, 3000);
+        }
+        
+        // Функция открытия яйца
+        function openEgg() {
+            const random = Math.random();
+            let result = '';
+            let powerIncrease = 0;
+            
+            if (random < 1/2) {
+                result = 'Redris (+40 к силе клика)';
+                powerIncrease = 40;
+            } else if (random < 1/2 + 1/4) {
+                result = 'Chorni (+100 к силе клика)';
+                powerIncrease = 100;
+            } else if (random < 1/2 + 1/4 + 1/8) {
+                result = 'VIZI (+500 к силе клика)';
+                powerIncrease = 500;
+            } else if (random < 1/2 + 1/4 + 1/8 + 1/16) {
+                result = 'White (+1000 к силе клика)';
+                powerIncrease = 1000;
+            } else {
+                result = 'Garik (+5000 к силе клика)';
+                powerIncrease = 5000;
+            }
+            
+            clickPower += powerIncrease;
+            eggResult.textContent = `Из яйца выпал: ${result}`;
+            eggResult.style.display = 'block';
+        }
+        
+        // Функция проверки условия победы
+        function checkWinCondition() {
+            if (currency >= 100000000) {
+                winScreen.style.display = 'flex';
+            }
+        }
+        
+        // Функция обновления интерфейса
+        function updateUI() {
+            currencyElement.textContent = currency.toLocaleString();
+            clickPowerElement.textContent = clickPower.toLocaleString();
+            
+            // Обновление состояния кнопок улучшений
+            for (let i = 0; i < upgradeButtons.length; i++) {
+                if (currency < upgradeCosts[i] || (i === 4 && secretShopUnlocked)) {
+                    upgradeButtons[i].disabled = true;
+                } else {
+                    upgradeButtons[i].disabled = false;
+                }
+            }
+            
+            // Обновление состояния кнопки покупки яйца
+            buyEggButton.disabled = currency < 20000;
+        }
+        
+        // Инициализация игры
+        updateUI();
+    </script>
+</body>
+</html>
